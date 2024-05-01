@@ -1,4 +1,7 @@
-from scapy.all import IP, ICMP, Padding, sr1
+from scapy.all import IP, ICMP, Raw, sr1, sniff
+
+def is_ping(packet):
+    return ICMP in packet
 
 def alphabet_list(start = "A", end = 'z'):
     alphabet = []
@@ -15,8 +18,13 @@ def alphabet_list(start = "A", end = 'z'):
 def main():
     alphabet = alphabet_list(end= 'v')
 
-    ping_request = IP(dst = 'www.google.com')/ICMP(type = 8, code = 0, id = 1, seq = 1)/Padding(alphabet)
-    ping_request.show()
+    ping_request = IP(dst = 'www.google.com')/ICMP(type = 8, code = 0, id = 1, seq = 1)/Raw(alphabet)
+    #ping_request.show()
+
+    ping_reply = sr1(ping_request)
+    #print(ping_reply.show())
+
+    print(ping_reply[Raw].load.decode())
 
 if __name__ == "__main__":
     main()
