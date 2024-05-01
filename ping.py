@@ -1,4 +1,5 @@
 from scapy.all import IP, ICMP, Raw, sr1, sniff
+from sys import argv
 
 def is_ping(packet):
     return ICMP in packet
@@ -15,16 +16,27 @@ def alphabet_list(start = "A", end = 'z'):
     
     return ''.join(alphabet)        
 
+def sr_ping(ID, sq, data):
+    ping_request = IP(dst = 'www.google.com')/ICMP(type = 8, code = 0, id = ID, seq = sq)/Raw(data)
+
+    ping_reply = sr1(ping_request, timeout = 1)
+
+    return ping_reply
+
 def main():
+    ip = argv[1]
+    n = int(argv[2])
+
+    received = 0
     alphabet = alphabet_list(end= 'v')
 
-    ping_request = IP(dst = 'www.google.com')/ICMP(type = 8, code = 0, id = 1, seq = 1)/Raw(alphabet)
-    #ping_request.show()
+    for i in range(n):
+        reply = sr_ping(n + 1, n + 1, alphabet)
+        if reply != None:
+            received = received + 1
 
-    ping_reply = sr1(ping_request)
-    #print(ping_reply.show())
-
-    print(ping_reply[Raw].load.decode())
+    print(f"Sent {n} packets to {ip}")
+    print(f"Received {received} reply packets from {ip}")
 
 if __name__ == "__main__":
     main()
