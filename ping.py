@@ -17,12 +17,12 @@ def alphabet_list(start = "A", end = 'z'):
     return ''.join(alphabet)        
 
 def sr_ping(n, data):
-    """for i in range(n-1):
+    packets = []
+    for i in range(n):
         ping_request = IP(dst = 'www.google.com')/ICMP(type = 8, code = 0, id = n + 1, seq = n + 1)/Raw(data)
-        send(ping_request)"""
+        packets.append(ping_request)
 
-    ping_request = IP(dst = 'www.google.com')/ICMP(type = 8, code = 0, id = n + 1, seq = n + 1)/Raw(data)
-    ping_replies = sr(ping_request)
+    ping_replies = sr(packets)
 
     return ping_replies
 
@@ -33,10 +33,13 @@ def main():
     alphabet = alphabet_list(end= 'v')
 
     reply_packets = sr_ping(4, alphabet)[0]
-    received = len([packet[1] for packet in reply_packets if ICMP in packet[1]])
+    loads = [packet[1][Raw].load.decode() for packet in reply_packets if ICMP in packet[1]]
+
+    received = len(loads)
 
     print(f"Sent {n} packets to {ip}")
     print(f"Received {received} reply packets from {ip}")
+    [print(f'got data {load[1]} for packet {load[0]}') for load in enumerate(loads)]
 
 if __name__ == "__main__":
     main()
